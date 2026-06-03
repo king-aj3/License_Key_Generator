@@ -3,7 +3,7 @@
 Identical file in the License Manager and every app it serves. Each app has its
 OWN keypair: the PUBLIC key is compiled into that app (verify-only); the PRIVATE
 keys live only here and never ship. Key = "AJK1.<payload_b64url>.<sig_b64url>";
-payload = "<tier>|<name>|<exp>|<nonce>"  (tier AJJ3|FRIEND|BETA; exp "0"=never).
+payload = "<tier>|<name>|<exp>|<nonce>"  (tier AJJ3|ASAWA|FRIEND|BETA; exp "0"=never).
 """
 from __future__ import annotations
 import base64, hashlib, secrets
@@ -12,7 +12,7 @@ KEY_BITS = 1024
 PUBLIC_EXPONENT = 65537
 KEY_PREFIX = "AJK1"
 PAYLOAD_SEP = "|"
-TIERS = ("AJJ3", "FRIEND", "BETA")
+TIERS = ("AJJ3", "ASAWA", "FRIEND", "BETA")
 
 def _b64u(b): return base64.urlsafe_b64encode(b).decode().rstrip("=")
 def _b64u_dec(s): return base64.urlsafe_b64decode(s + "=" * (-len(s) % 4))
