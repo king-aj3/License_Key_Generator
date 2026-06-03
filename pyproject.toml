@@ -39,15 +39,19 @@ include_packages = []
 include_modules  = []
 nofollow_imports = []
 
-# Ship the user-facing docs alongside the executable.
+# Ship the user-facing docs + app icons alongside the executable.
 data_files = [
-    ["README.md",         "README.md"],
-    ["ABOUT.md",          "ABOUT.md"],
-    ["HELP.md",           "HELP.md"],
+    ["README.md",          "README.md"],
+    ["ABOUT.md",           "ABOUT.md"],
+    ["HELP.md",            "HELP.md"],
     ["docs/USER_GUIDE.md", "docs/USER_GUIDE.md"],
+    ["assets/icon.ico",     "assets/icon.ico"],
+    ["assets/icon.icns",    "assets/icon.icns"],
+    ["assets/icon-256.png", "assets/icon-256.png"],
 ]
 
-# No icon in the project yet. Drop an icon.ico in and uncomment to brand it.
-# [tool.nuitka_builder.icons]
-# windows = "icon.ico"
-# macos   = "icon.icns"
+# App icon embedded into the binary per OS. Linux has no embedded icon — it
+# uses assets/icon-256.png at runtime (set via _app_icon) + the .desktop Icon=.
+[tool.nuitka_builder.icons]
+windows = "assets/icon.ico"
+macos   = "assets/icon.icns"

@@ -4,8 +4,10 @@ AJJ3 apps. Holds every app's private key and signs keys offline; the apps
 embed only their public key and verify. Pure stdlib crypto + PySide6.
 """
 from __future__ import annotations
+import os
 import sys
 
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QApplication, QMainWindow, QTabWidget,
                                QFileDialog, QMessageBox)
 
@@ -18,6 +20,23 @@ from tabs.verify_tab import VerifyTab
 
 APP_NAME = "AJJ3 License Manager"
 APP_VERSION = "1.0.0"
+
+
+def _app_icon() -> QIcon:
+    """Window/taskbar icon, picking the right file per OS. Resolved relative
+    to this file so it works from source and from a Nuitka build (icons ship
+    in assets/ via pyproject data_files)."""
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+    if sys.platform.startswith("win"):
+        name = "icon.ico"
+    elif sys.platform == "darwin":
+        name = "icon.icns"
+    else:  # Linux / other
+        name = "icon-256.png"
+    path = os.path.join(base, name)
+    if not os.path.exists(path):          # PNG renders on every platform
+        path = os.path.join(base, "icon-256.png")
+    return QIcon(path)
 
 
 class MainWindow(QMainWindow):
@@ -89,6 +108,7 @@ class MainWindow(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName(APP_NAME)
+    app.setWindowIcon(_app_icon())
     app.setStyleSheet(STYLESHEET)
     win = MainWindow()
     win.show()
