@@ -1,0 +1,79 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Shield body: steel-blue, top-lit for a 3D dome feel -->
+    <linearGradient id="shieldFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#4a6fa5"/>
+      <stop offset="45%" stop-color="#33517d"/>
+      <stop offset="100%" stop-color="#1f3454"/>
+    </linearGradient>
+    <!-- Bevelled outer rim -->
+    <linearGradient id="shieldRim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#9fb6d6"/>
+      <stop offset="50%" stop-color="#5b7aa8"/>
+      <stop offset="100%" stop-color="#142440"/>
+    </linearGradient>
+    <!-- Glossy top highlight -->
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Brass key -->
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#ffe9a8"/>
+      <stop offset="35%" stop-color="#f4c04e"/>
+      <stop offset="70%" stop-color="#cf8f28"/>
+      <stop offset="100%" stop-color="#9c6712"/>
+    </linearGradient>
+    <radialGradient id="bowSheen" cx="38%" cy="32%" r="70%">
+      <stop offset="0%"  stop-color="#fff6db"/>
+      <stop offset="55%" stop-color="#f3bf48"/>
+      <stop offset="100%" stop-color="#b9801e"/>
+    </radialGradient>
+    <filter id="dropShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.40"/>
+    </filter>
+    <filter id="keyShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0a1424" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <!-- ===== Shield ===== -->
+  <g filter="url(#dropShadow)">
+    <!-- outer rim -->
+    <path fill="url(#shieldRim)" d="M256 64
+      C306 64 372 78 426 100
+      L426 262
+      C426 360 360 426 256 470
+      C152 426 86 360 86 262
+      L86 100
+      C140 78 206 64 256 64 Z"/>
+    <!-- inner face (inset ~16px) -->
+    <path fill="url(#shieldFace)" d="M256 88
+      C300 88 360 100 408 119
+      L408 260
+      C408 344 352 402 256 442
+      C160 402 104 344 104 260
+      L104 119
+      C152 100 212 88 256 88 Z"/>
+    <!-- top gloss -->
+    <path fill="url(#gloss)" d="M256 88
+      C300 88 360 100 408 119
+      L408 224
+      C336 250 176 250 104 224
+      L104 119
+      C152 100 212 88 256 88 Z"/>
+  </g>
+
+  <!-- ===== Key (vertical, in front of shield) ===== -->
+  <g filter="url(#keyShadow)">
+    <!-- bow / head -->
+    <circle cx="256" cy="196" r="58" fill="url(#bowSheen)" stroke="#7a5210" stroke-width="3"/>
+    <circle cx="256" cy="196" r="26" fill="url(#shieldFace)" stroke="#7a5210" stroke-width="3"/>
+    <!-- shaft -->
+    <rect x="242" y="244" width="28" height="150" rx="6" fill="url(#brass)" stroke="#7a5210" stroke-width="3"/>
+    <!-- teeth -->
+    <rect x="270" y="330" width="34" height="20" rx="3" fill="url(#brass)" stroke="#7a5210" stroke-width="3"/>
+    <rect x="270" y="364" width="22" height="20" rx="3" fill="url(#brass)" stroke="#7a5210" stroke-width="3"/>
+  </g>
+</svg>
