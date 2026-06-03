@@ -7,10 +7,22 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGroupBox,
                                QLineEdit, QPushButton, QLabel, QMessageBox,
                                QApplication, QInputDialog)
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
 
 import keycrypto
+from helpers import entry_state
 
 COLS = ["App", "Tier", "Licensee", "Expiry", "Status", "Issued", "Notes"]
+
+# Row tints for stale keys (chosen to read on the dark 3D theme).
+_RED   = QColor("#7a2e2e")   # key no longer verifies against current app key
+_AMBER = QColor("#7a5b1e")   # edited after minting; still valid but out of sync
+_STALE_TIP = {
+    "invalid": "Key no longer verifies against this app's current key "
+               "(keypair re-generated or app changed). Re-issue to fix.",
+    "edited":  "Row edited after minting — the key still carries the old "
+               "details. Re-issue to update the key.",
+}
 
 
 class RegistryTab(QWidget):
@@ -83,13 +95,21 @@ class RegistryTab(QWidget):
 
         self.table.setRowCount(len(self._rows))
         for r, e in enumerate(self._rows):
+            state = entry_state(e, self.ks)          # "ok" | "invalid" | "edited"
+            status_txt = e["status"]
+            if state != "ok" and e["status"] != "revoked":
+                status_txt += "  ⚠ re-mint"
             vals = [e["app_id"], e["tier"], e["name"],
                     "never" if e["exp"] == "0" else e["exp"],
-                    e["status"], e["issued_at"][:10], e.get("notes", "")]
+                    status_txt, e["issued_at"][:10], e.get("notes", "")]
             for c, val in enumerate(vals):
                 item = QTableWidgetItem(val)
                 if e["status"] == "revoked":
                     item.setForeground(Qt.gray)
+                elif state == "invalid":
+                    item.setBackground(_RED);   item.setToolTip(_STALE_TIP["invalid"])
+                elif state == "edited":
+                    item.setBackground(_AMBER); item.setToolTip(_STALE_TIP["edited"])
                 self.table.setItem(r, c, item)
 
     def _selected(self):
@@ -139,14 +159,17 @@ class RegistryTab(QWidget):
         app = self.ks.get_app(e["app_id"])
         if not app or not app.get("keypair"):
             QMessageBox.warning(self, "Re-issue", "App keypair missing."); return
+        # Sign a fresh key from the row's CURRENT tier/name/exp (so an edited
+        # name is baked in) with the app's CURRENT keypair, then swap it into
+        # this same row — clears any red/amber stale flag in place.
         payload = keycrypto.make_payload(e["tier"], e["name"], e["exp"])
         key = keycrypto.sign_payload(payload, keycrypto.obj_to_key(app["keypair"]))
         parsed = keycrypto.parse_payload(payload)
-        self.ks.add_entry(e["app_id"], e["tier"], parsed["name"], e["exp"],
-                          parsed["nonce"], key, notes="re-issue of earlier key")
+        self.ks.reissue_entry(e["key"], key, parsed["nonce"])
         self.ks.save()
         QApplication.clipboard().setText(key)
-        QMessageBox.information(self, "Re-issue", "New key minted and copied to clipboard.")
+        QMessageBox.information(self, "Re-issue",
+                                "Key re-minted in place and copied to clipboard.")
         self._fill(); self.on_change()
 
     def _delete(self):

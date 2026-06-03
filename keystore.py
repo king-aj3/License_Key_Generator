@@ -137,6 +137,23 @@ class Keystore:
         key already in use (offline keys can't be revoked)."""
         self.data["registry"] = [e for e in self.registry if e["key"] != key]
 
+    def reissue_entry(self, key: str, new_key: str, new_nonce: str) -> None:
+        """Replace a row's key in place: swap in the freshly minted key/nonce,
+        stamp issued_at now, and reset status to active. Keeps list position
+        (and the row's tier/name/exp/notes) so re-minting doesn't pile up rows."""
+        e = self.find_entry(key)
+        if not e:
+            return
+        e["key"] = new_key
+        e["nonce"] = new_nonce
+        e["issued_at"] = _now_iso()
+        e["status"] = "active"
+
+    def delete_app(self, app_id: str) -> None:
+        """Remove an app, its keypair, and every registry entry issued for it."""
+        self.data["apps"] = [a for a in self.apps if a["id"] != app_id]
+        self.data["registry"] = [e for e in self.registry if e["app_id"] != app_id]
+
     # ---- backup / restore ------------------------------------------------
     def backup(self, dest_path: str) -> None:
         if not os.path.exists(self.path):

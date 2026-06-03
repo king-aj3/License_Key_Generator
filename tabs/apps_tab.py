@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QGroupBox,
                                QInputDialog)
 
 import keycrypto
-from helpers import fingerprint, pubkey_block
+from helpers import fingerprint, pubkey_block, entry_state
 
 
 class AppsTab(QWidget):
@@ -45,7 +45,9 @@ class AppsTab(QWidget):
         btn_row = QHBoxLayout()
         self.rename_btn = QPushButton("Rename"); self.rename_btn.clicked.connect(self._rename)
         self.gen_btn = QPushButton("Generate keypair"); self.gen_btn.clicked.connect(self._gen)
+        self.delete_btn = QPushButton("Delete app"); self.delete_btn.clicked.connect(self._delete_app)
         btn_row.addWidget(self.rename_btn); btn_row.addWidget(self.gen_btn)
+        btn_row.addWidget(self.delete_btn)
         rv.addLayout(btn_row)
 
         rv.addWidget(QLabel("Public key to embed in the app:"))
@@ -78,16 +80,21 @@ class AppsTab(QWidget):
         has = bool(app)
         self.rename_btn.setEnabled(has)
         self.gen_btn.setEnabled(has)
+        self.delete_btn.setEnabled(has)
         self.copy_btn.setEnabled(bool(app and app.get("keypair")))
         if not app:
             self.detail.setText("Select an app.")
             self.pub_box.setPlainText("")
             return
         kp = app.get("keypair")
+        stale = sum(1 for e in self.ks.registry
+                    if e["app_id"] == app["id"] and entry_state(e, self.ks) != "ok")
+        badge = (f'<br><span style="color:#d9a441">⚠ {stale} key(s) need '
+                 f're-mint — see Registry</span>') if stale else ""
         self.detail.setText(
             f'<b>{app["id"]}</b> — {app["display_name"]}<br>'
             f'Keypair: {"set" if kp else "not generated"}<br>'
-            f'Fingerprint: <code>{fingerprint(kp)}</code>')
+            f'Fingerprint: <code>{fingerprint(kp)}</code>{badge}')
         self.gen_btn.setText("Re-generate keypair" if kp else "Generate keypair")
         self.pub_box.setPlainText(
             pubkey_block({"n": kp["n"], "e": kp["e"]}) if kp else "")
@@ -130,6 +137,28 @@ class AppsTab(QWidget):
         self.ks.set_keypair(app_id, keycrypto.priv_to_obj(priv))
         self.ks.save()
         self._show_selected()
+        self.on_change()
+
+    def _delete_app(self):
+        app_id = self._current_id()
+        app = self.ks.get_app(app_id)
+        if not app:
+            return
+        n = sum(1 for e in self.ks.registry if e["app_id"] == app_id)
+        msg = f'Delete app "{app["id"]}" — {app["display_name"]}?\n\n'
+        if app.get("keypair"):
+            msg += ("Its private key will be permanently destroyed. Any build of this "
+                    "app that embedded the matching public key will then accept NO key "
+                    "you can mint here.\n\n")
+        if n:
+            msg += f"This will also remove {n} issued key(s) for it from the registry.\n\n"
+        msg += "This cannot be undone."
+        if QMessageBox.warning(self, "Delete app", msg,
+                               QMessageBox.Yes | QMessageBox.No) != QMessageBox.Yes:
+            return
+        self.ks.delete_app(app_id)
+        self.ks.save()
+        self.refresh()
         self.on_change()
 
     def _copy_pub(self):
