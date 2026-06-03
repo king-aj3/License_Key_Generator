@@ -49,7 +49,8 @@ class RegistryTab(QWidget):
         b = QHBoxLayout()
         for label, slot in (("Copy key", self._copy), ("Edit name", self._edit_name),
                             ("Edit notes", self._edit_notes),
-                            ("Toggle revoked", self._toggle), ("Re-issue", self._reissue)):
+                            ("Toggle revoked", self._toggle), ("Re-issue", self._reissue),
+                            ("Delete", self._delete)):
             btn = QPushButton(label); btn.clicked.connect(slot); b.addWidget(btn)
         v.addLayout(b)
         root.addWidget(box)
@@ -147,3 +148,19 @@ class RegistryTab(QWidget):
         QApplication.clipboard().setText(key)
         QMessageBox.information(self, "Re-issue", "New key minted and copied to clipboard.")
         self._fill(); self.on_change()
+
+    def _delete(self):
+        e = self._selected()
+        if not e:
+            return
+        if QMessageBox.warning(
+                self, "Delete key",
+                f'Delete the {e["tier"]} key for "{e["name"]}" from the registry?\n\n'
+                "This removes it from your local record only. It does NOT disable a "
+                "key already in use (offline keys can't be revoked).",
+                QMessageBox.Yes | QMessageBox.No) != QMessageBox.Yes:
+            return
+        self.ks.delete_entry(e["key"])
+        self.ks.save()
+        self._fill()
+        self.on_change()

@@ -132,6 +132,11 @@ class Keystore:
         if notes is not None:
             e["notes"] = notes
 
+    def delete_entry(self, key: str) -> None:
+        """Remove a registry entry. Local record only — does not disable any
+        key already in use (offline keys can't be revoked)."""
+        self.data["registry"] = [e for e in self.registry if e["key"] != key]
+
     # ---- backup / restore ------------------------------------------------
     def backup(self, dest_path: str) -> None:
         if not os.path.exists(self.path):
