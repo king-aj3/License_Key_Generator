@@ -1,0 +1,53 @@
+# pyproject.toml — AJJ3 License Manager
+# Built with the shared Build_Scripts/build.py (reads [tool.nuitka_builder]).
+#   python /path/to/Build_Scripts/build.py .            # onefile (default)
+#   python /path/to/Build_Scripts/build.py . --audit    # validate config
+
+[project]
+name = "AJJ3LicenseManager"
+version = "1.0.0"
+description = "Offline RSA license-key minting for the AJJ3 apps"
+authors = [{ name = "AJJ3" }]
+requires-python = ">=3.10"
+dependencies = ["PySide6"]
+
+# ─────────────────────────────────────────────────────────────────────────
+# Nuitka build configuration (consumed by Build_Scripts/build.py)
+# ─────────────────────────────────────────────────────────────────────────
+[tool.nuitka_builder.app]
+name        = "AJJ3LicenseManager"
+version     = "1.0.0"
+description = "Offline RSA license-key minting for the AJJ3 apps"
+author      = "AJJ3"
+entry       = "main.py"
+
+[tool.nuitka_builder.build]
+# "yes" | "no" | "auto"  (auto = off on Windows+MSVC, on elsewhere)
+lto = "auto"
+
+[tool.nuitka_builder.nuitka]
+plugins = ["pyside6"]
+# include_qt_plugins intentionally omitted: this is a QtWidgets-only app with
+# no QML and no QtPrintSupport, so the pyside6 plugin's default ("sensible")
+# set is sufficient. Avoids the "all" QML tree, which breaks Linux builds
+# (patchelf on stray .cpp.o files). Set "sensible,printsupport" only if
+# printing is ever added.
+
+# All imports are static, so no include_packages/include_modules safety net
+# is required. Add here only if Nuitka ever misses a dynamically loaded module.
+include_packages = []
+include_modules  = []
+nofollow_imports = []
+
+# Ship the user-facing docs alongside the executable.
+data_files = [
+    ["README.md",         "README.md"],
+    ["ABOUT.md",          "ABOUT.md"],
+    ["HELP.md",           "HELP.md"],
+    ["docs/USER_GUIDE.md", "docs/USER_GUIDE.md"],
+]
+
+# No icon in the project yet. Drop an icon.ico in and uncomment to brand it.
+# [tool.nuitka_builder.icons]
+# windows = "icon.ico"
+# macos   = "icon.icns"

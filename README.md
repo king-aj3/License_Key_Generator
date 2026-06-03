@@ -25,11 +25,18 @@ never placed in the repo or a build.
 - `ui_theme.py` — single non-flat 3D stylesheet
 - `tabs/` — `apps_tab`, `mint_tab`, `registry_tab`, `verify_tab`
 - `docs/` — USER_GUIDE, PROJECT_MEMORY
+- `pyproject.toml`, `requirements.txt` — build config + dependency pin
 
 ## Build
-Intended to build with the shared `Build_Scripts/build.py` driven by
-`pyproject.toml [tool.nuitka_builder]`. The pyproject is added once an example
-of your build schema is supplied (see PROJECT_MEMORY → Open items).
+Builds with the shared `Build_Scripts/build.py`, driven by
+`pyproject.toml [tool.nuitka_builder]` (no `build_config.toml`):
+
+    python /path/to/Build_Scripts/build.py .            # onefile exe (default)
+    python /path/to/Build_Scripts/build.py . --audit    # validate config
+    python /path/to/Build_Scripts/build.py . --standalone
+
+`requirements.txt` pins the only third-party dependency (PySide6); build.py
+installs it into the build env automatically.
 
 ## Workflow
 Apps tab → add an app → Generate keypair (once) → copy its public-key block into

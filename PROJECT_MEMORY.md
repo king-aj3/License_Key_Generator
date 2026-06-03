@@ -13,8 +13,14 @@
 - 2026-06-03 — Non-flat 3D look implemented as a single shared QSS in
   `ui_theme.py` (gradient panels, beveled buttons, sunken fields). New palette;
   no prior colors to preserve.
-- 2026-06-03 — "Revoked" is a tracking flag only; documented in UI and HELP that
-  offline keys can't be cryptographically revoked.
+- 2026-06-03 — Build wired via `pyproject.toml [tool.nuitka_builder]` (not
+  `build_config.toml`), matching the shared build.py schema (app/build/nuitka/
+  icons tables). `requirements.txt` pins PySide6.
+- 2026-06-03 — `include_qt_plugins` omitted on purpose. App is QtWidgets-only
+  (no QML, no QtPrintSupport), so the pyside6 plugin default ("sensible") is
+  enough. Avoided "all" (used in the other apps' configs) because build.py's own
+  notes flag that "all" pulls in the QML tree and breaks Linux builds via
+  patchelf. Set "sensible,printsupport" only if printing is added later.
 
 ## Known constraints
 - stdlib crypto + PySide6 only; no third-party crypto.
@@ -22,11 +28,12 @@
 - Re-generating an app's keypair invalidates all previously issued keys for it.
 
 ## Open items
-- pyproject.toml `[tool.nuitka_builder]` not yet written — waiting on an example
-  of the user's build schema to match it exactly, then wire to the shared
-  `Build_Scripts/build.py`.
+- (none) — full Nuitka compile to be run on a build host; config resolution
+  confirmed via `build.py --audit` (exit 0, no issues).
 
 ## Changelog
 - 2026-06-03 — Initial build: full PySide6 app (4 tabs), keystore, theme,
   helpers, keycrypto (verbatim), five-file doc set. Crypto round-trip,
   cross-app rejection, keystore persistence/perms/backup-restore all tested.
+- 2026-06-03 — Added pyproject.toml [tool.nuitka_builder] + requirements.txt;
+  validated against the shared build.py (--audit exit 0).
