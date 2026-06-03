@@ -50,6 +50,10 @@ class AppsTab(QWidget):
         btn_row.addWidget(self.delete_btn)
         rv.addLayout(btn_row)
 
+        self.reissue_all_btn = QPushButton("Re-issue all stale keys")
+        self.reissue_all_btn.clicked.connect(self._reissue_all_stale)
+        rv.addWidget(self.reissue_all_btn)
+
         rv.addWidget(QLabel("Public key to embed in the app:"))
         self.pub_box = QPlainTextEdit(); self.pub_box.setReadOnly(True)
         self.pub_box.setFixedHeight(90)
@@ -85,10 +89,12 @@ class AppsTab(QWidget):
         if not app:
             self.detail.setText("Select an app.")
             self.pub_box.setPlainText("")
+            self.reissue_all_btn.setEnabled(False)
             return
         kp = app.get("keypair")
         stale = sum(1 for e in self.ks.registry
                     if e["app_id"] == app["id"] and entry_state(e, self.ks) != "ok")
+        self.reissue_all_btn.setEnabled(stale > 0)
         badge = (f'<br><span style="color:#d9a441">⚠ {stale} key(s) need '
                  f're-mint — see Registry</span>') if stale else ""
         self.detail.setText(
@@ -160,6 +166,36 @@ class AppsTab(QWidget):
         self.ks.save()
         self.refresh()
         self.on_change()
+
+    def _reissue_all_stale(self):
+        app_id = self._current_id()
+        app = self.ks.get_app(app_id)
+        if not app or not app.get("keypair"):
+            return
+        stale = [e for e in self.ks.registry
+                 if e["app_id"] == app_id and entry_state(e, self.ks) != "ok"]
+        if not stale:
+            return
+        if QMessageBox.warning(
+                self, "Re-issue all stale",
+                f'Re-mint {len(stale)} stale key(s) for "{app["id"]}"?\n\n'
+                "Each is re-signed in place with this app's current key. This "
+                "updates your local records only — keys already delivered to "
+                "users are not changed, and any that became invalid must be "
+                "re-sent.",
+                QMessageBox.Yes | QMessageBox.No) != QMessageBox.Yes:
+            return
+        priv = keycrypto.obj_to_key(app["keypair"])
+        for e in stale:
+            payload = keycrypto.make_payload(e["tier"], e["name"], e["exp"])
+            key = keycrypto.sign_payload(payload, priv)
+            nonce = keycrypto.parse_payload(payload)["nonce"]
+            self.ks.reissue_entry(e["key"], key, nonce)
+        self.ks.save()
+        self._show_selected()
+        self.on_change()
+        QMessageBox.information(self, "Re-issue all stale",
+                                f"Re-minted {len(stale)} key(s) in place.")
 
     def _copy_pub(self):
         from PySide6.QtWidgets import QApplication

@@ -27,7 +27,8 @@ backup the keys are unrecoverable and every app must be re-keyed. Back up often
 
 **A Registry row is red** → That key no longer verifies against the app's current
 public key — usually because you re-generated that app's keypair. Select the row
-and click Re-issue (then re-send/re-embed the new key).
+and click Re-issue (then re-send/re-embed the new key). To fix many at once after
+a keypair regen, use "Re-issue all stale keys" on the Apps tab.
 
 **A Registry row is amber** → You edited that row (e.g. the licensee name) after
 the key was minted, so the key still carries the old details. Click Re-issue to
