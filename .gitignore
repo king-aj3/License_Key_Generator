@@ -1,0 +1,25 @@
+# ── Stray per-project build file ───────────────────────────────────────────────
+# This app builds from pyproject.toml [tool.nuitka_builder] only. A build_config.toml
+# would SHADOW pyproject in build.py — never commit one (an accidental --init is ignored).
+build_config.toml
+
+# ── Build output (Nuitka / build.py) ──────────────────────────────────────────
+build/
+dist/
+build_env/
+build*/
+*.dist/
+*.onefile-build/
+build.log
+nuitka-crash-report.xml
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ── IDE ────────────────────────────────────────────────────────────────────────
+.idea/
