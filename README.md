@@ -1,7 +1,7 @@
 # AJJ3 License Manager
 
 A PySide6 desktop tool that mints offline license keys for the AJJ3 apps
-(My_LLM, WealthBuilder, Thrift Reseller, …). It holds every app's RSA private
+(AJJ³ Brain, WealthBuilder, Thrift Reseller, …). It holds every app's RSA private
 key and signs keys locally. Each app embeds only its own public key and verifies
 — a key minted for one app will not verify in another, because the per-app
 keypair *is* the scope. Crypto is pure standard library (`keycrypto.py`, RSA via
